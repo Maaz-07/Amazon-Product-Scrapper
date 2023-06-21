@@ -1,51 +1,48 @@
 import requests
 from bs4 import BeautifulSoup
 
-url = "https://www.amazon.com/s?k=laptop+computer&crid=140WOO6C5KR9B&sprefix=la%2Caps%2C305&ref=nb_sb_ss_ts-doa-p_1_2"
+def scrape_amazon(search_query):
+    base_url = "https://www.amazon.com"
+    search_url = base_url + "/s?k=" + search_query.replace(" ", "+")
 
-# Send a GET request to the URL
-response = requests.get(url)
+    # Send a GET request to the search URL
+    response = requests.get(search_url)
 
-# Create a BeautifulSoup object with the HTML content
-soup = BeautifulSoup(response.content, "html.parser")
+    # Parse the HTML content using BeautifulSoup
+    soup = BeautifulSoup(response.content, "html.parser")
 
-# Find all the laptop products on the page
-products = soup.find_all("div", class_="sg-col-inner")
+    # Find all the product containers on the page
+    product_containers = soup.find_all("div", {"data-component-type": "s-search-result"})
 
-# Loop through each product and extract the desired information
-for product in products:
-    # Extract product name
-    name_element = product.find("span", class_="a-size-medium")
-    if name_element:
-        name = name_element.text.strip()
-    else:
-        continue
+    # Extract desired information from each product container
+    for container in product_containers:
+        # Extract the product title
+        title_element = container.find("span", class_="a-size-medium")
+        if title_element:
+            title = title_element.text.strip()
+        else:
+            title = "N/A"
 
-    # Extract product price
-    price_element = product.find("span", class_="a-offscreen")
-    if price_element:
-        price = price_element.text.strip()
-    else:
-        continue
+        # Extract the product price
+        price_element = container.find("span", class_="a-offscreen")
+        if price_element:
+            price = price_element.text.strip()
+        else:
+            price = "N/A"
 
-    # Extract product rating
-    rating_element = product.find("span", class_="a-icon-alt")
-    if rating_element:
-        rating = rating_element.text.strip().split()[0]
-    else:
-        continue
+        # Extract the product rating
+        rating_element = container.find("span", class_="a-icon-alt")
+        if rating_element:
+            rating = rating_element.text.strip()
+        else:
+            rating = "N/A"
 
-    # Extract number of raters
-    raters_element = product.find("span", class_="a-size-base")
-    if raters_element:
-        raters = raters_element.text.strip().replace(",", "")
-    else:
-        continue
+        # Print the extracted information
+        print("Title:", title)
+        print("Price:", price)
+        print("Rating:", rating)
+        print("-----------------------")
 
-    # Print the extracted information
-    print("Name:", name)
-    print("Price:", price)
-    print("Rating:", rating)
-    print("Number of Raters:", raters)
-    print()
-
+# Example usage
+search_query = "laptop"
+scrape_amazon(search_query)
